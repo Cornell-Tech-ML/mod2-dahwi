@@ -95,8 +95,15 @@ def broadcast_index(
         None
 
     """
-    # TODO: Implement for Task 2.2.
-    raise NotImplementedError("Need to implement for Task 2.2")
+    for i in range(1, len(shape)+1):
+        # align from the right
+        # big_dim = big_shape[-i]
+        dim = shape[-i]
+        if dim == 1:
+            out_index[-i] = 0
+        else: # dim == big_dim
+            out_index[-i] = big_index[-i]
+    
 
 
 def shape_broadcast(shape1: UserShape, shape2: UserShape) -> UserShape:
@@ -113,8 +120,27 @@ def shape_broadcast(shape1: UserShape, shape2: UserShape) -> UserShape:
         IndexingError : if cannot broadcast
 
     """
-    # TODO: Implement for Task 2.2.
-    raise NotImplementedError("Need to implement for Task 2.2")
+    shape1, shape2 = list(reversed(shape1)), list(reversed(shape2))
+    l1, l2 = len(shape1), len(shape2)
+    res = []
+    i = 0
+    shorter_len = min(l1, l2)
+    while i < shorter_len:
+        d1, d2 = shape1[i], shape2[i]
+        if d1 != d2 and d1 != 1 and d2 != 1:
+            raise IndexingError(f"The size of tensor a {(d1)} must match the size of tensor b {(d2)}")
+        res.append(d1 if d1 != 1 else d2)
+        i += 1
+    
+    while i < l1:
+        res.append(shape1[i])
+        i += 1
+    
+    while i < l2:
+        res.append(shape2[i])
+        i += 1
+
+    return tuple(reversed(res))
 
 
 def strides_from_shape(shape: UserShape) -> UserStrides:
@@ -182,9 +208,31 @@ class TensorData:
 
     @staticmethod
     def shape_broadcast(shape_a: UserShape, shape_b: UserShape) -> UserShape:
+        """Broadcast two shapes to create a new union shape.
+
+        Args:
+            shape_a : first shape
+            shape_b : second shape
+
+        Returns:
+            broadcasted shape
+
+        """
         return shape_broadcast(shape_a, shape_b)
 
     def index(self, index: Union[int, UserIndex]) -> int:
+        """Convert a given index to a position in the tensor's flattened storage.
+
+        Args:
+            index (Union[int, UserIndex]): The index to convert. It can be an integer
+            for single-dimensional indexing or a UserIndex for multi-dimensional
+            indexing.
+
+        Returns:
+            int: The position in the tensor's flattened storage corresponding to the
+            given index.
+
+        """
         if isinstance(index, int):
             aindex: Index = array([index])
         else:  # if isinstance(index, tuple):
@@ -208,6 +256,7 @@ class TensorData:
         return index_to_position(array(index), self._strides)
 
     def indices(self) -> Iterable[UserIndex]:
+        """Generate all valid indices for the tensor."""
         lshape: Shape = array(self.shape)
         out_index: Index = array(self.shape)
         for i in range(self.size):
