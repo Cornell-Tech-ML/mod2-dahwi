@@ -41,7 +41,9 @@ class TensorOps:
     @staticmethod
     def reduce(
         fn: Callable[[float, float], float], start: float = 0.0
-    ) -> Callable[[Tensor, int], Tensor]: ...
+    ) -> Callable[[Tensor, int], Tensor]: 
+        """Reduce placeholder"""
+        ...
 
     @staticmethod
     def matrix_multiply(a: Tensor, b: Tensor) -> Tensor:
@@ -194,6 +196,7 @@ class SimpleOps(TensorOps):
 
         Args:
             fn: function from two floats-to-float to apply
+            start: starting value for reduction
             a (:class:`TensorData`): tensor to reduce over
             dim (int): int of dim to reduce
 
@@ -261,8 +264,13 @@ def tensor_map(
         in_shape: Shape,
         in_strides: Strides,
     ) -> None:
-        # TODO: Implement for Task 2.3.
-        raise NotImplementedError("Need to implement for Task 2.3")
+        out_index = np.zeros(len(out_shape), dtype=int)
+        in_index = np.zeros(len(in_shape), dtype=int)
+
+        for i in range(len(out)):
+            to_index(i, out_shape, out_index)
+            broadcast_index(out_index, out_shape, in_shape, in_index)
+            out[i] = fn(in_storage[index_to_position(in_index, in_strides)])
 
     return _map
 
@@ -306,8 +314,15 @@ def tensor_zip(
         b_shape: Shape,
         b_strides: Strides,
     ) -> None:
-        # TODO: Implement for Task 2.3.
-        raise NotImplementedError("Need to implement for Task 2.3")
+        out_index = np.zeros(len(out_shape), dtype=int)
+        a_index = np.zeros(len(a_shape), dtype=int)
+        b_index = np.zeros(len(b_shape), dtype=int)
+
+        for i in range(len(out)):
+            to_index(i, out_shape, out_index)
+            broadcast_index(out_index, out_shape, a_shape, a_index)
+            broadcast_index(out_index, out_shape, b_shape, b_index)
+            out[i] = fn(a_storage[index_to_position(a_index, a_strides)],b_storage[index_to_position(b_index, b_strides)])
 
     return _zip
 
@@ -337,8 +352,30 @@ def tensor_reduce(
         a_strides: Strides,
         reduce_dim: int,
     ) -> None:
-        # TODO: Implement for Task 2.3.
-        raise NotImplementedError("Need to implement for Task 2.3")
+        out_index = np.zeros(len(out_shape), dtype=int)
+        a_index = np.zeros(len(a_shape), dtype=int)
+
+        for i in range(len(out)):
+            to_index(i, out_shape, out_index)
+
+            # set a_index to out_index except reduce_dim
+            for dim in range(len(out_index)):
+                if dim != reduce_dim:
+                    a_index[dim] = out_index[dim]
+                else:
+                    a_index[dim] = 0
+
+            a_pos = index_to_position(a_index, a_strides)
+            acc = a_storage[a_pos]
+            # Iterate over the reduce dimension and accumulate
+            for j in range(1, a_shape[reduce_dim]):
+                a_index[reduce_dim] = j
+                position = index_to_position(a_index, a_strides)
+                acc = fn(acc, a_storage[position])
+
+            # Store the result in the output storage
+            out[i] = acc
+
 
     return _reduce
 

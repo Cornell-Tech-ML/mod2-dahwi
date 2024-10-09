@@ -135,7 +135,7 @@ class Neg(ScalarFunction):
 
     @staticmethod
     def backward(ctx: Context, d_output: float) -> float:
-        """Deruvative of neg is -1."""
+        """Derivative of neg is -1."""
         return -1.0 * d_output
 
 
