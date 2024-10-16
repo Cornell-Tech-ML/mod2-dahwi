@@ -190,7 +190,7 @@ class Sum(Function):
     @staticmethod
     def forward(ctx: Context, t1: Tensor, dim: Tensor | None = None) -> Tensor:
         """Sum of a tensor"""
-        ctx.save_for_backward(t1)
+        ctx.save_for_backward(dim)
         if dim is not None:
             return t1.f.add_reduce(t1, int(dim.item()))
         else:
