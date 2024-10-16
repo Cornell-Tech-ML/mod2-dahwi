@@ -117,12 +117,15 @@ class Mul(Function):
         """Multiply two tensors"""
         ctx.save_for_backward(t1, t2)
         return t1.f.mul_zip(t1, t2)
-    
+
     @staticmethod
     def backward(ctx: Context, grad_output: Tensor) -> Tuple[Tensor, Tensor]:
         """Gradient tensor of the multiplcation"""
         (t1, t2) = ctx.saved_values
-        return grad_output.f.mul_zip(grad_output, t2), grad_output.f.mul_zip(grad_output, t1)
+        return grad_output.f.mul_zip(grad_output, t2), grad_output.f.mul_zip(
+            grad_output, t1
+        )
+
 
 class Sigmoid(Function):
     @staticmethod
