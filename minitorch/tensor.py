@@ -202,6 +202,21 @@ class Tensor:
         # END CODE CHANGE (2021)
 
     def zeros(self, shape: Optional[UserShape] = None) -> Tensor:
+        """Create a tensor of the specified shape, filled with zeros.
+        If no shape is provided, it uses the shape of the current tensor.
+
+        Args:
+        ----
+            shape (Optional[UserShape]): The shape of the tensor to create. If None,
+            the shape of the current tensor is used.
+
+        Returns:
+        -------
+            Tensor: A new tensor filled with zeros, having the specified shape and
+            using the same backend as the current tensor.
+
+        """
+
         def zero(shape: UserShape) -> Tensor:
             return Tensor.make(
                 [0.0] * int(operators.prod(shape)), shape, backend=self.backend
@@ -252,7 +267,7 @@ class Tensor:
 
     @property
     def parents(self) -> Iterable[Variable]:
-        """Return the parent variables of this variable."""        
+        """Return the parent variables of this variable."""
         assert self.history is not None
         return self.history.inputs
 
@@ -334,13 +349,13 @@ class Tensor:
 
     def __neg__(self) -> Tensor:
         return Neg.apply(self)
-    
+
     def __radd__(self, b: TensorLike) -> Tensor:
         return Add.apply(self._ensure_tensor(b), self)
 
     def __rmul__(self, b: TensorLike) -> Tensor:
         return Mul.apply(self._ensure_tensor(b), self)
-    
+
     def all(self, dim: Optional[TensorLike] = None) -> Tensor:
         r"""Return 1 if all are true"""
         if dim is not None:
@@ -368,30 +383,25 @@ class Tensor:
         """Exponential function $f(x) = e^x$"""
         return Exp.apply(self)
 
-    def sum(self, dim: Optional[TensorLike]=None) -> Tensor:
+    def sum(self, dim: Optional[TensorLike] = None) -> Tensor:
         """Sum the tensor along a specific dimension, or all dimensions if dim is None."""
-        self.zero_grad_()
         if dim is None:
             # Sum over all elements if no dim is provided
             return Sum.apply(self)  # Summing over all dimensions
         else:
             return Sum.apply(self, self._ensure_tensor(dim))
-    
-    def view(self, shape: TensorLike) -> Tensor:
-        """Reshape the tensor to the given shape."""
-        self.zero_grad_()
-        return View.apply(self, self._ensure_tensor(shape))
 
-    def permute(self, dims: Tensor) -> Tensor:
+    def view(self, *dim: TensorLike) -> Tensor:
+        """Reshape the tensor to the given shape."""
+        return View.apply(self, tensor(dim))
+
+    def permute(self, *dim: TensorLike) -> Tensor:
         """Permutes the tensor with the order of given dims"""
-        self.zero_grad_()
-        return Permute.apply(self, dims)
-    
-    def mean(self, dim: Optional[TensorLike]=None) -> Tensor:
+        return Permute.apply(self, tensor(dim))
+
+    def mean(self, dim: Optional[TensorLike] = None) -> Tensor:
         """Calculate the mean of the tensor"""
-        self.zero_grad_()
         if dim is None:
             return self.sum() / self.size
         else:
-            return self.sum(dim) / self.shape[int(self._ensure_tensor(dim).item())]
-
+            return self.sum(dim) / int(self.shape[int(self._ensure_tensor(dim).item())])
