@@ -250,25 +250,26 @@ class IsClose(Function):
 
 class Permute(Function):
     @staticmethod
-    def forward(ctx: Context, t1: Tensor, dims: Tensor) -> Tensor:
+    def forward(ctx: Context, t1: Tensor, order: Tensor) -> Tensor:
         """Permute the dimensions of the tensor based on the specified order."""
-        ctx.save_for_backward(dims)  # Save dims for backward pass
-        dims_list = [int(d) for d in dims.to_numpy()]  # Convert dims to a list
-        return t1._new(
-            t1._tensor.permute(*dims_list)
-        )  # Use the permute function of tensor
+         # Save dims for backward pass
+        ctx.save_for_backward(order) 
+        # Convert dims to a list
+        order_list = [int(d) for d in order.to_numpy()]  
+        # Use the permute function of tensor
+        return t1._new(t1._tensor.permute(*order_list))  
 
     @staticmethod
     def backward(ctx: Context, grad_output: Tensor) -> Tuple[Tensor, Tensor]:
         """Reverse the permutation for the backward pass."""
-        (dims,) = ctx.saved_values
-        dims_list = [int(d) for d in dims.to_numpy()]  # Convert dims to a list
+        (order,) = ctx.saved_values
+        order_list = [int(d) for d in order.to_numpy()]
         # Inverse the permutation for the backward pass
-        inverse_dims = [0] * len(dims_list)
-        for i, d in enumerate(dims_list):
+        inverse_dims = [0] * len(order_list)
+        for i, d in enumerate(order_list):
             inverse_dims[d] = i
         return grad_output._new(grad_output._tensor.permute(*inverse_dims)), zeros(
-            dims.shape
+            order.shape
         )
 
 
