@@ -46,7 +46,7 @@ class Linear(minitorch.Module):
         w = self.weights.value
         mat_mul = minitorch.Tensor.sum(input.view(input.shape[0], 1, input.shape[1]) * w.view(1, w.shape[1], w.shape[0]), dim=2)
         return mat_mul.view(mat_mul.shape[0], mat_mul.shape[1]) + self.bias.value
-        
+
 
 class TensorTrain:
     def __init__(self, hidden_layers):

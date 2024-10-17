@@ -252,12 +252,12 @@ class Permute(Function):
     @staticmethod
     def forward(ctx: Context, t1: Tensor, order: Tensor) -> Tensor:
         """Permute the dimensions of the tensor based on the specified order."""
-         # Save dims for backward pass
-        ctx.save_for_backward(order) 
+        # Save dims for backward pass
+        ctx.save_for_backward(order)
         # Convert dims to a list
-        order_list = [int(d) for d in order.to_numpy()]  
+        order_list = [int(d) for d in order.to_numpy()]
         # Use the permute function of tensor
-        return t1._new(t1._tensor.permute(*order_list))  
+        return t1._new(t1._tensor.permute(*order_list))
 
     @staticmethod
     def backward(ctx: Context, grad_output: Tensor) -> Tuple[Tensor, Tensor]:
