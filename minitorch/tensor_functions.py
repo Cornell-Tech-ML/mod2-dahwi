@@ -205,7 +205,7 @@ class Sum(Function):
     def backward(
         ctx: Context, grad_output: Tensor
     ) -> Union[Tensor, Tuple[Tensor, float]]:
-        """Gradient tensor of the multiplcation"""
+        """Gradient tensor of the Sum"""
         (dim,) = ctx.saved_values
         if dim is not None:
             return grad_output, 0.0
