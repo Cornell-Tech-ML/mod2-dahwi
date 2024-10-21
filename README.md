@@ -238,6 +238,8 @@ Epoch: 500/500, loss: 6.341883183080107, correct: 50
 - Number of epochs: 450
 - Size of hidden layer: 16
 
+#### Time per epoch: 1.477s
+
 #### Logs:
 
 ```
