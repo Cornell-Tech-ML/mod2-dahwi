@@ -204,11 +204,11 @@ class Sum(Function):
     @staticmethod
     def backward(
         ctx: Context, grad_output: Tensor
-    ) -> Union[Tensor, Tuple[Tensor, float]]:
+    ) -> Union[Tensor, Tuple[Tensor, Tensor]]:
         """Gradient tensor of the Sum"""
         (dim,) = ctx.saved_values
         if dim is not None:
-            return grad_output, 0.0
+            return grad_output, zeros(dim.shape)
         else:
             return grad_output
 
@@ -277,7 +277,7 @@ class View(Function):
     @staticmethod
     def forward(ctx: Context, a: Tensor, shape: Tensor) -> Tensor:
         """View a tensor"""
-        ctx.save_for_backward(a.shape)
+        ctx.save_for_backward(a.shape, shape)
         assert a._tensor.is_contiguous(), "Must be contiguous to view"
         shape2 = [int(shape[i]) for i in range(shape.size)]
         return minitorch.Tensor.make(
@@ -285,14 +285,14 @@ class View(Function):
         )
 
     @staticmethod
-    def backward(ctx: Context, grad_output: Tensor) -> Tuple[Tensor, float]:
+    def backward(ctx: Context, grad_output: Tensor) -> Tuple[Tensor, Tensor]:
         """Matrix Multiply backward (module 3)"""
-        (original,) = ctx.saved_values
+        (original, shape) = ctx.saved_values
         return (
             minitorch.Tensor.make(
                 grad_output._tensor._storage, original, backend=grad_output.backend
             ),
-            0.0,
+            zeros(shape.shape),
         )
 
 
